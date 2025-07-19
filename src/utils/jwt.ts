@@ -10,7 +10,13 @@ interface userPayLoad {
 export const generateToken = (user: userPayLoad): string => {
   const secret: string | undefined = String(process.env.JWT_SECRET);
   return jwt.sign(user, secret, {
-    expiresIn: '30m',
+    expiresIn: process.env.APP_ENV === 'production' ? '1m' : '1d',
+  });
+};
+
+export const generateRefreshToken = (user: userPayLoad): string => {
+  return jwt.sign(user, String(process.env.JWT_REFRESH_SECRET), {
+    expiresIn: process.env.APP_ENV === 'production' ? '1d' : '7d',
   });
 };
 
@@ -22,7 +28,6 @@ export const verifyAcessToken = (token: string): string | null | jwt.JwtPayload 
   try {
     return jwt.verify(token, String(process.env.JWT_SECRET));
   } catch (_) {
-    console.log(_);
     return null;
   }
 };
@@ -31,13 +36,6 @@ export const verifyRefreshToken = (token: string): string | null | jwt.JwtPayloa
   try {
     return jwt.verify(token, String(process.env.JWT_REFRESH_SECRET));
   } catch (_) {
-    console.log(_);
     return null;
   }
-};
-
-export const generateRefreshToken = (user: userPayLoad): string => {
-  return jwt.sign(user, String(process.env.JWT_REFRESH_SECRET), {
-    expiresIn: '1d',
-  });
 };

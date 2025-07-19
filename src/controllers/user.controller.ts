@@ -2,7 +2,7 @@ import prisma from '../utils/prisma';
 import { Request, Response } from 'express';
 
 export const getProfile = async (req: Request, res: Response) => {
-  try { 
+  try {
     const user = await prisma.user.findFirst({
       where: { id: req.user?.id },
       select: {

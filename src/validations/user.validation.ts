@@ -1,8 +1,7 @@
 import UserType from '@/types/user.type';
 import Joi from 'joi';
 
-export const userValidationSchema = (payload: UserType): Joi.ValidationResult<UserType> => {
-  console.log(payload);
+export const userValidationSchema = (payload: UserType): Joi.ValidationResult<UserType> => { 
   const schema = Joi.object({
     id: Joi.string().trim().allow(null, ''),
     name: Joi.string().trim().min(3).max(30).required().messages({

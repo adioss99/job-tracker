@@ -7,7 +7,7 @@
     "esModuleInterop": true,
     "baseUrl": "./src",
     "paths": {
-      "@/*": ["*"],
+      "@/*": ["src/*"],
       "@/controllers/*": ["controllers/*"],
       "@/models/*": ["models/*"],
       "@/middleware/*": ["middleware/*"],

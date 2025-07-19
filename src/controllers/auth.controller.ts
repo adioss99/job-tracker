@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../utils/prisma';
 import { loginValidationSchema, userValidationSchema } from '../validations/user.validation';
-import { valResponse } from '../helper/validation.helper';
+import { valResponse, invalidResponse } from '../helper/errorResponse';
 import { Prisma } from '@prisma/client';
 import { comparePassword, hashPassword } from '../utils/bcrypts';
 import { generateRefreshToken, generateToken, verifyRefreshToken } from '../utils/jwt';
@@ -13,7 +13,11 @@ export const register = async (req: Request, res: Response) => {
 
     const { name, email, password } = value;
     const user = await prisma.user.create({
-      data: { name, email: email.toLowerCase(), password: await hashPassword(password) },
+      data: {
+        name,
+        email: email.toLowerCase(),
+        password: await hashPassword(password),
+      },
     });
     res.status(201).json({
       success: true,
@@ -50,8 +54,16 @@ export const login = async (req: Request, res: Response) => {
     const isPasswordValid = await comparePassword(password, user.password);
     if (!isPasswordValid) return invalidResponse(res);
 
-    const accessToken: string = generateToken({ id: user.id, name: user.name, role: user.role });
-    const refreshToken: string = generateRefreshToken({ id: user.id, name: user.name, role: user.role });
+    const accessToken: string = generateToken({
+      id: user.id,
+      name: user.name,
+      role: user.role,
+    });
+    const refreshToken: string = generateRefreshToken({
+      id: user.id,
+      name: user.name,
+      role: user.role,
+    });
 
     const data = await prisma.user.update({
       where: { id: user.id },
@@ -59,9 +71,14 @@ export const login = async (req: Request, res: Response) => {
       select: { id: true, name: true, email: true, role: true },
     });
 
+    const cookieExpired = process.env.APP_ENV === 'production' ? 1 : 7;
     res
       .status(200)
-      .cookie('refresh', refreshToken, { httpOnly: true, secure: true, maxAge: 24 * 60 * 60 * 1000 })
+      .cookie('refresh', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        maxAge: cookieExpired * 24 * 60 * 60 * 1000,
+      })
       .json({
         success: true,
         data: { data, accessToken },
@@ -79,7 +96,6 @@ export const refreshToken = async (req: Request, res: Response) => {
   try {
     const cookies = req.cookies;
     if (!cookies?.refresh) return res.status(401).json({ success: false, message: 'No refresh token provided' });
-    console.log(!cookies?.refresh); 
 
     const token = cookies.refresh;
     const user = await prisma.user.findFirst({
@@ -90,8 +106,11 @@ export const refreshToken = async (req: Request, res: Response) => {
     const verifyToken = verifyRefreshToken(token);
     if (!verifyToken) return res.status(403);
 
-    const accessToken = generateToken({ id: user.id, name: user.name, role: user.role });
-
+    const accessToken = generateToken({
+      id: user.id,
+      name: user.name,
+      role: user.role,
+    });
     res.status(200).json({ accessToken });
   } catch (error: string | any) {
     res.status(500).json({
@@ -122,9 +141,3 @@ export const logout = async (req: Request, res: Response) => {
   }
 };
 
-const invalidResponse = (res: Response, val: string = '', code: number = 401) => {
-  return res.status(401).json({
-    success: false,
-    message: 'Invalid credentials ' + val,
-  });
-};
