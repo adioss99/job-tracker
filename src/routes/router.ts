@@ -17,7 +17,7 @@ router.get('/', (req: Request, res: Response) => {
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.get('/refresh-token', authController.refreshToken);
-router.post('/logout', authMiddleware, authController.logout);
+router.delete('/logout', authController.logout);
 
 router.get('/profile', authMiddleware, userConrtoller.getProfile);
 router.get('/users', authMiddleware, isAdmin, userConrtoller.getUser);
