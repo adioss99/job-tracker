@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 import prisma from '../utils/prisma';
 import { loginValidationSchema, userValidationSchema } from '../validations/user.validation';
-import { valResponse, invalidResponse } from '../helper/errorResponse';
+import { valResponse, invalidResponse } from '../helpers/errorResponse';
 import { Prisma } from '@prisma/client';
 import { comparePassword, hashPassword } from '../utils/bcrypts';
 import { generateRefreshToken, generateToken, verifyRefreshToken } from '../utils/jwt';
 
-export const register = async (req: Request, res: Response) => {
+const register = async (req: Request, res: Response) => {
   try {
     const { error, value } = userValidationSchema(req.body);
     if (error) return valResponse(res, error);
@@ -38,7 +38,7 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+const login = async (req: Request, res: Response) => {
   try {
     const { error, value } = loginValidationSchema(req.body);
     if (error) return valResponse(res, error);
@@ -92,7 +92,7 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-export const refreshToken = async (req: Request, res: Response) => {
+const refreshToken = async (req: Request, res: Response) => {
   try {
     const cookies = req.cookies;
     if (!cookies?.refresh) return res.status(401).json({ success: false, message: 'No refresh token provided' });
@@ -121,7 +121,7 @@ export const refreshToken = async (req: Request, res: Response) => {
   }
 };
 
-export const logout = async (req: Request, res: Response) => {
+const logout = async (req: Request, res: Response) => {
   try {
     const token = req.cookies.refresh;
     if (!token) return res.status(401).json({ success: false, message: 'No token provided' });
@@ -141,3 +141,9 @@ export const logout = async (req: Request, res: Response) => {
   }
 };
 
+export default {
+  register,
+  login,
+  refreshToken,
+  logout,
+};

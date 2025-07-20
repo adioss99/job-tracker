@@ -12,6 +12,7 @@
       "@/models/*": ["models/*"],
       "@/middleware/*": ["middleware/*"],
       "@/routes/*": ["routes/*"],
+      "@/helper/*": ["helpers/*"],
       "@/utils/*": ["utils/*"],
       "@/config/*": ["config/*"],
       "@/types/*": ["types/*"]

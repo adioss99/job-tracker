@@ -1,7 +1,7 @@
 import { Router, Response, Request } from 'express';
-import { authMiddleware, isAdmin } from '../middleware/auth.middleware'; 
-import { getUser, getProfile } from '../controllers/user.controller';
-import { register, login, refreshToken, logout } from '../controllers/auth.controller';
+import { authMiddleware, isAdmin } from '../middleware/auth.middleware';
+import userConrtoller from '../controllers/user.controller';
+import authController from '../controllers/auth.controller';
 import jobController from '../controllers/job.controller';
 
 const router = Router();
@@ -11,18 +11,18 @@ router.get('/', (req: Request, res: Response) => {
     success: true,
     message: 'API is running',
   });
-}); 
+});
 
-router.post('/register', register);
-router.post('/login', login);
-router.get('/refresh-token', refreshToken);
-router.post('/logout', authMiddleware, logout);
+router.post('/register', authController.register);
+router.post('/login', authController.login);
+router.get('/refresh-token', authController.refreshToken);
+router.post('/logout', authMiddleware, authController.logout);
 
-router.get('/profile', authMiddleware, getProfile);
-router.get('/users', authMiddleware, isAdmin, getUser);
+router.get('/profile', authMiddleware, userConrtoller.getProfile);
+router.get('/users', authMiddleware, isAdmin, userConrtoller.getUser);
 
 // Job routes
-router.get('/jobs', authMiddleware, jobController.getJob);
+router.get('/jobs', authMiddleware, jobController.getJobs);
 router.get('/job/:jobId', authMiddleware, jobController.jobDetails);
 router.post('/job/:method', authMiddleware, jobController.submitJob);
 router.put('/job/:method/:jobId', authMiddleware, jobController.submitJob);

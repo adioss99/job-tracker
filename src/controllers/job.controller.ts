@@ -1,7 +1,8 @@
 import prisma from '../utils/prisma';
 import { Request, Response } from 'express';
 import { jobValSchema } from '../validations/job.validation';
-import { invalidResponse, valResponse } from '../helper/errorResponse';
+import { invalidResponse, valResponse } from '../helpers/errorResponse';
+import { paginate } from '../helpers/pagination';
 
 const submitJob = async (req: Request, res: Response) => {
   try {
@@ -18,11 +19,6 @@ const submitJob = async (req: Request, res: Response) => {
       job = await prisma.job.create({
         data: {
           ...inputData,
-          statuses: {
-            create: {
-              status: 'Just Applied',
-            },
-          },
         },
       });
     } else {
@@ -53,10 +49,13 @@ const submitJob = async (req: Request, res: Response) => {
   }
 };
 
-const getJob = async (req: Request, res: Response) => {
+const getJobs = async (req: Request, res: Response) => {
   try {
-    let jobs: any[] = [];
+    const { page, limit, skip } = paginate(req);
+
     const job = await prisma.job.findMany({
+      take: limit,
+      skip: skip,
       orderBy: { applyDate: 'desc' },
       where: { userId: req.user.id },
       select: {
@@ -76,7 +75,7 @@ const getJob = async (req: Request, res: Response) => {
         },
       },
     });
-    jobs = job.map((j) => ({
+    const jobs = job.map((j) => ({
       ...j,
       latestStatus: j.statuses[0]?.status || 'No Status',
     }));
@@ -84,6 +83,11 @@ const getJob = async (req: Request, res: Response) => {
     res.status(200).json({
       success: true,
       data: jobs.length === 0 ? null : jobs,
+      pagination: {
+        currentPage: page,
+        totalItems: jobs.length,
+        totalPages: Math.ceil(jobs.length / limit),
+      },
     });
   } catch (error: string | any) {
     res.status(500).json({
@@ -112,7 +116,7 @@ const jobDetails = async (req: Request, res: Response) => {
       },
     });
     if (!job) return invalidResponse(res, 'Job not found');
-
+    job.statuses = job.statuses.length === 0 ? [{ id: '', status: 'No Status' }] : job.statuses;
     res.status(200).json({
       success: true,
       data: job,
@@ -157,7 +161,7 @@ const deleteJob = async (req: Request, res: Response) => {
 
 export default {
   submitJob,
-  getJob,
+  getJobs,
   jobDetails,
   deleteJob,
 };

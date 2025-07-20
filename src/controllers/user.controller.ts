@@ -1,7 +1,7 @@
 import prisma from '../utils/prisma';
 import { Request, Response } from 'express';
 
-export const getProfile = async (req: Request, res: Response) => {
+const getProfile = async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findFirst({
       where: { id: req.user?.id },
@@ -25,7 +25,7 @@ export const getProfile = async (req: Request, res: Response) => {
   }
 };
 
-export const getUser = async (req: Request, res: Response) => {
+const getUser = async (req: Request, res: Response) => {
   try {
     const users = await prisma.user.findMany();
     res.status(200).json({
@@ -39,4 +39,9 @@ export const getUser = async (req: Request, res: Response) => {
       error: error.message,
     });
   }
+};
+
+export default {
+  getProfile,
+  getUser,
 };
