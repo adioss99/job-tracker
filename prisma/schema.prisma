@@ -40,6 +40,7 @@ model Status {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   jobId     String   @db.ObjectId
   status    String
+  addDate      DateTime @default(now())
   job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt DateTime @updatedAt

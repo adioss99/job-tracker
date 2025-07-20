@@ -3,6 +3,7 @@ import { authMiddleware, isAdmin } from '../middleware/auth.middleware';
 import userConrtoller from '../controllers/user.controller';
 import authController from '../controllers/auth.controller';
 import jobController from '../controllers/job.controller';
+import statusController from '../controllers/status.controller';
 
 const router = Router();
 
@@ -27,5 +28,10 @@ router.get('/job/:jobId', authMiddleware, jobController.jobDetails);
 router.post('/job/:method', authMiddleware, jobController.submitJob);
 router.put('/job/:method/:jobId', authMiddleware, jobController.submitJob);
 router.delete('/job/:jobId', authMiddleware, jobController.deleteJob);
+
+router.get('/job-status/:statusId', authMiddleware, statusController.detailStatus);
+router.post('/job-status/:jobId', authMiddleware, statusController.submitStatus);
+router.put('/job-status/:jobId', authMiddleware, statusController.submitStatus);
+router.delete('/job-status', authMiddleware, statusController.deleteStatus);
 
 export default router;

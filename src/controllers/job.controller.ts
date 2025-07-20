@@ -70,11 +70,14 @@ const getJobs = async (req: Request, res: Response) => {
           select: {
             id: true,
             status: true,
+            addDate: true,
+            createdAt: true,
           },
-          orderBy: { createdAt: 'desc' },
+          orderBy: [{ addDate: 'desc' }, { createdAt: 'desc' }],
         },
       },
     });
+
     const jobs = job.map((j) => ({
       ...j,
       latestStatus: j.statuses[0]?.status || 'No Status',
@@ -110,13 +113,27 @@ const jobDetails = async (req: Request, res: Response) => {
           select: {
             id: true,
             status: true,
+            addDate: true,
+            createdAt: true,
+            updatedAt: true,
           },
-          orderBy: { createdAt: 'asc' },
+          orderBy: [{ addDate: 'asc' }, { createdAt: 'asc' }],
         },
       },
     });
     if (!job) return invalidResponse(res, 'Job not found');
-    job.statuses = job.statuses.length === 0 ? [{ id: '', status: 'No Status' }] : job.statuses;
+    job.statuses =
+      job.statuses.length === 0
+        ? [
+            {
+              id: '',
+              status: 'No Status',
+              addDate: new Date(0),
+              createdAt: new Date(0),
+              updatedAt: new Date(0),
+            },
+          ]
+        : job.statuses;
     res.status(200).json({
       success: true,
       data: job,
@@ -129,6 +146,7 @@ const jobDetails = async (req: Request, res: Response) => {
     });
   }
 };
+
 const deleteJob = async (req: Request, res: Response) => {
   try {
     const jobId = req.params.jobId;
