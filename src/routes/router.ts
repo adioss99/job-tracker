@@ -25,8 +25,8 @@ router.get('/users', authMiddleware, isAdmin, userConrtoller.getUser);
 // Job routes
 router.get('/jobs', authMiddleware, jobController.getJobs);
 router.get('/job/:jobId', authMiddleware, jobController.jobDetails);
-router.post('/job/:method', authMiddleware, jobController.submitJob);
-router.put('/job/:method/:jobId', authMiddleware, jobController.submitJob);
+router.post('/job', authMiddleware, jobController.submitJob);
+router.put('/job/:jobId', authMiddleware, jobController.submitJob);
 router.delete('/job/:jobId', authMiddleware, jobController.deleteJob);
 
 router.get('/job-status/:statusId', authMiddleware, statusController.detailStatus);

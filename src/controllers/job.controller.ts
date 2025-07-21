@@ -15,13 +15,13 @@ const submitJob = async (req: Request, res: Response) => {
     };
 
     let job;
-    if (req.params.method === 'create') {
+    if (req.method === 'POST') {
       job = await prisma.job.create({
         data: {
           ...inputData,
         },
       });
-    } else {
+    } else if (req.method === 'PUT') {
       const jobId = req.params.jobId;
       if (!jobId || jobId.length !== 24) return invalidResponse(res, 'Invalid id');
 
