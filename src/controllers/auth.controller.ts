@@ -49,10 +49,10 @@ const login = async (req: Request, res: Response) => {
       where: { email },
       select: { id: true, name: true, email: true, password: true, role: true },
     });
-    if (!user) return invalidResponse(res, '2');
+    if (!user) return invalidResponse(res, 'Invalid Credentials');
 
     const isPasswordValid = await comparePassword(password, user.password);
-    if (!isPasswordValid) return invalidResponse(res);
+    if (!isPasswordValid) return invalidResponse(res, 'Invalid Credentials');
 
     const accessToken: string = generateToken({
       id: user.id,
@@ -71,17 +71,20 @@ const login = async (req: Request, res: Response) => {
       select: { id: true, name: true, email: true, role: true },
     });
 
-    const cookieExpired = process.env.APP_ENV === 'production' ? 1 : 7;
+    const envi = process.env.APP_ENV === 'production';
     res
       .status(200)
       .cookie('refresh', refreshToken, {
         httpOnly: true,
-        secure: true,
-        maxAge: cookieExpired * 24 * 60 * 60 * 1000,
+        domain: 'localhost',
+        secure: envi, // Set to true in production           // BISA false di localhost, tapi 'none' butuh secure: true
+        sameSite: 'lax',
+        maxAge: (envi ? 2 : 7) * 24 * 60 * 60 * 1000,
       })
       .json({
         success: true,
-        data: { data, accessToken },
+        data,
+        accessToken,
       });
   } catch (error: string | any) {
     res.status(500).json({
@@ -111,7 +114,7 @@ const refreshToken = async (req: Request, res: Response) => {
       name: user.name,
       role: user.role,
     });
-    res.status(200).json({ accessToken });
+    res.status(200).json({ success: true, data: { id: user.id, role: user.role }, accessToken });
   } catch (error: string | any) {
     res.status(500).json({
       success: false,
@@ -127,7 +130,7 @@ const logout = async (req: Request, res: Response) => {
     if (!token) return res.status(401).json({ success: false, message: 'No token provided' });
 
     await prisma.user.update({
-      where: { id: req.user?.id },
+      where: { id: req.user.id },
       data: { refreshToken: '' },
     });
 
