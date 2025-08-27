@@ -4,7 +4,7 @@ import { loginValidationSchema, userValidationSchema } from '../validations/user
 import { valResponse, invalidResponse } from '../helpers/errorResponse';
 import { Prisma } from '@prisma/client';
 import { comparePassword, hashPassword } from '../utils/bcrypts';
-import { generateRefreshToken, generateToken, verifyRefreshToken } from '../utils/jwt';
+import { generateRefreshToken, generateToken } from '../utils/jwt';
 
 const register = async (req: Request, res: Response) => {
   try {
@@ -97,17 +97,11 @@ const login = async (req: Request, res: Response) => {
 
 const refreshToken = async (req: Request, res: Response) => {
   try {
-    const cookies = req.cookies;
-    if (!cookies?.refresh) return res.status(401).json({ success: false, message: 'No refresh token provided' });
-
-    const token = cookies.refresh;
+    const cookies = req.user;
     const user = await prisma.user.findFirst({
-      where: { refreshToken: token },
+      where: { id: cookies.id, refreshToken: req.cookies.refresh },
     });
-    if (!user) return invalidResponse(res, '3');
-
-    const verifyToken = verifyRefreshToken(token);
-    if (!verifyToken) return res.status(403);
+    if (!user) return invalidResponse(res, 'Refresh token not found');
 
     const accessToken = generateToken({
       id: user.id,
@@ -126,11 +120,9 @@ const refreshToken = async (req: Request, res: Response) => {
 
 const logout = async (req: Request, res: Response) => {
   try {
-    const token = req.cookies.refresh;
-    if (!token) return res.status(401).json({ success: false, message: 'No token provided' });
-
+    const user = req.user;
     await prisma.user.update({
-      where: { id: req.user.id },
+      where: { id: user.id },
       data: { refreshToken: '' },
     });
 

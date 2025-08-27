@@ -11,6 +11,6 @@ export const valResponse = (res: Response, error: ValidationError) => {
 export const invalidResponse = (res: Response, val: string = '', code: number = 401) => {
   return res.status(code).json({
     success: false,
-    message: 'Invalid: ' + val,
+    message: val,
   });
 };
