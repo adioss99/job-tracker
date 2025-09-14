@@ -25,6 +25,7 @@ const submitStatus = async (req: Request, res: Response) => {
       });
     } else if (req.method === 'PUT') {
       const statusId = req.query.statusId;
+      console.log(statusId);
       if (!statusId || statusId.length !== 24) return invalidResponse(res, 'Status ID is required');
 
       status = await prisma.status.update({

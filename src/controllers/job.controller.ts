@@ -51,13 +51,22 @@ const submitJob = async (req: Request, res: Response) => {
 
 const getJobs = async (req: Request, res: Response) => {
   try {
+    const { title, company, location } = req.query;
+    console.log(title, company, location);
     const { page, limit, skip } = paginate(req);
+
+    const where: any = {
+      userId: req.user.id,
+    };
+    if (title) where.title = { contains: title, mode: 'insensitive' };
+    if (company) where.company = { contains: company, mode: 'insensitive' };
+    if (location) where.location = { contains: location, mode: 'insensitive' };
 
     const job = await prisma.job.findMany({
       take: limit,
       skip: skip,
       orderBy: { applyDate: 'desc' },
-      where: { userId: req.user.id },
+      where,
       select: {
         id: true,
         title: true,
@@ -127,10 +136,10 @@ const jobDetails = async (req: Request, res: Response) => {
         ? [
             {
               id: '',
-              status: 'No Status',
-              addDate: new Date(0),
-              createdAt: new Date(0),
-              updatedAt: new Date(0),
+              status: 'No Response',
+              addDate: job.applyDate,
+              createdAt: job.createdAt,
+              updatedAt: job.createdAt,
             },
           ]
         : job.statuses;
