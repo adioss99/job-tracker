@@ -52,16 +52,17 @@ const submitJob = async (req: Request, res: Response) => {
 const getJobs = async (req: Request, res: Response) => {
   try {
     const { title, company, location } = req.query;
-    console.log(title, company, location);
     const { page, limit, skip } = paginate(req);
+    console.log(page, limit, skip);
 
     const where: any = {
       userId: req.user.id,
     };
+    
     if (title) where.title = { contains: title, mode: 'insensitive' };
     if (company) where.company = { contains: company, mode: 'insensitive' };
     if (location) where.location = { contains: location, mode: 'insensitive' };
-
+    
     const job = await prisma.job.findMany({
       take: limit,
       skip: skip,
@@ -86,11 +87,13 @@ const getJobs = async (req: Request, res: Response) => {
         },
       },
     });
-
+    const total = await prisma.job.count({ where });
+    
     const jobs = job.map((j) => ({
       ...j,
       latestStatus: j.statuses[0]?.status || 'No Status',
     }));
+    
 
     res.status(200).json({
       success: true,
@@ -98,7 +101,7 @@ const getJobs = async (req: Request, res: Response) => {
       pagination: {
         currentPage: page,
         totalItems: jobs.length,
-        totalPages: Math.ceil(jobs.length / limit),
+        totalPages: total > 0 ? Math.ceil(total / limit) : 1,
       },
     });
   } catch (error: string | any) {
