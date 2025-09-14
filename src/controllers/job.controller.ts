@@ -53,47 +53,48 @@ const getJobs = async (req: Request, res: Response) => {
   try {
     const { title, company, location } = req.query;
     const { page, limit, skip } = paginate(req);
-    console.log(page, limit, skip);
 
     const where: any = {
       userId: req.user.id,
+      ...(title && { title: { contains: title, mode: 'insensitive' } }),
+      ...(company && { company: { contains: company, mode: 'insensitive' } }),
+      ...(location && { location: { contains: location, mode: 'insensitive' } }),
     };
-    
-    if (title) where.title = { contains: title, mode: 'insensitive' };
-    if (company) where.company = { contains: company, mode: 'insensitive' };
-    if (location) where.location = { contains: location, mode: 'insensitive' };
-    
-    const job = await prisma.job.findMany({
-      take: limit,
-      skip: skip,
-      orderBy: { applyDate: 'desc' },
-      where,
-      select: {
-        id: true,
-        title: true,
-        company: true,
-        role: true,
-        type: true,
-        location: true,
-        applyDate: true,
-        statuses: {
-          select: {
-            id: true,
-            status: true,
-            addDate: true,
-            createdAt: true,
+
+    // Run both queries in parallel for efficiency
+    const [job, total] = await prisma.$transaction([
+      prisma.job.findMany({
+        take: limit,
+        skip,
+        orderBy: { applyDate: 'desc' },
+        where,
+        select: {
+          id: true,
+          title: true,
+          company: true,
+          role: true,
+          type: true,
+          location: true,
+          applyDate: true,
+          statuses: {
+            select: {
+              id: true,
+              status: true,
+              addDate: true,
+              createdAt: true,
+            },
+            take: 1, // only fetch the latest status instead of all
+            orderBy: [{ addDate: 'desc' }, { createdAt: 'desc' }],
           },
-          orderBy: [{ addDate: 'desc' }, { createdAt: 'desc' }],
         },
-      },
-    });
-    const total = await prisma.job.count({ where });
-    
+      }),
+      prisma.job.count({ where }),
+    ]);
+
     const jobs = job.map((j) => ({
       ...j,
       latestStatus: j.statuses[0]?.status || 'No Status',
     }));
-    
 
     res.status(200).json({
       success: true,
