@@ -4,6 +4,7 @@ import userConrtoller from '../controllers/user.controller';
 import authController from '../controllers/auth.controller';
 import jobController from '../controllers/job.controller';
 import statusController from '../controllers/status.controller';
+import dashboardController from '../controllers/dashboard.controller';
 
 const router = Router();
 
@@ -33,5 +34,7 @@ router.get('/job-status/:statusId', isAuthenticated, statusController.detailStat
 router.post('/job-status/:jobId', isAuthenticated, statusController.submitStatus);
 router.put('/job-status/:jobId', isAuthenticated, statusController.submitStatus);
 router.delete('/job-status', isAuthenticated, statusController.deleteStatus);
+
+router.get('/dashboard', isAuthenticated, dashboardController.index);
 
 export default router;
