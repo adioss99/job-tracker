@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import { jobValSchema } from '../validations/job.validation';
 import { invalidResponse, valResponse } from '../helpers/errorResponse';
 import { paginate } from '../helpers/pagination';
+import normalizeDate from '../helpers/normalizeDate';
 
 const submitJob = async (req: Request, res: Response) => {
   try {
@@ -11,6 +12,7 @@ const submitJob = async (req: Request, res: Response) => {
 
     const inputData = {
       ...value,
+      applyDate: normalizeDate(value.applyDate),
       userId: req.user.id,
     };
 

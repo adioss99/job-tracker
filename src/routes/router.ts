@@ -36,5 +36,6 @@ router.put('/job-status/:jobId', isAuthenticated, statusController.submitStatus)
 router.delete('/job-status', isAuthenticated, statusController.deleteStatus);
 
 router.get('/dashboard', isAuthenticated, dashboardController.index);
+router.get('/dashboard/chart', isAuthenticated, dashboardController.chartData);
 
 export default router;
