@@ -45,7 +45,7 @@ const chartData = async (req: Request, res: Response) => {
     const tweleveMonthsAgo = new Date();
     tweleveMonthsAgo.setMonth(tweleveMonthsAgo.getMonth() - 12);
     
-    const last12Moths = await jobs
+    const last12Months = await jobs
       .aggregate([
         {
           $match: {
@@ -55,10 +55,7 @@ const chartData = async (req: Request, res: Response) => {
         },
         {
           $group: {
-            _id: {
-              year: { $year: '$applyDate' },
-              month: { $month: '$applyDate' },
-            },
+            _id: { $dateTrunc: { date: '$applyDate', unit: 'month' } },
             count: { $sum: 1 },
           },
         },
@@ -68,7 +65,7 @@ const chartData = async (req: Request, res: Response) => {
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const last30DaysAgo = await jobs
+    const last30Days = await jobs
       .aggregate([
         {
           $match: {
@@ -88,7 +85,7 @@ const chartData = async (req: Request, res: Response) => {
       ])
       .toArray();
 
-    res.status(200).json({ success: true, data: { last12Moths, last30DaysAgo } });
+    res.status(200).json({ success: true, data: { last12Months, last30Days } });
   } catch (error: string | any) {
     res.status(500).json({ success: false, message: 'Error getting chart data', error: error.message });
   }
