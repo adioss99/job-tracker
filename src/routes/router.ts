@@ -8,10 +8,11 @@ import dashboardController from '../controllers/dashboard.controller';
 
 const router = Router();
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/', (_req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: 'API is running',
+    prod: process.env.IS_PRODUCTION === 'true',
   });
 });
 

@@ -1,6 +1,6 @@
 import { CorsOptions } from 'cors';
 
-const whitelist = ['http://localhost:5173', 'http://localhost:3000', 'https://your-frontend.com'];
+const whitelist = ['http://localhost:5173', 'http://localhost:3000', 'https://job-tracker-fe-one.vercel.app'];
 
 export const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
@@ -15,4 +15,6 @@ export const corsOptions: CorsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  optionsSuccessStatus: 200,
+  allowedHeaders: ['Content-Type', 'Authorization'],  
 };
