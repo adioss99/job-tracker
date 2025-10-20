@@ -70,16 +70,15 @@ const login = async (req: Request, res: Response) => {
       data: { refreshToken },
       select: { id: true, name: true, email: true, role: true },
     });
-
-    const envi = process.env.APP_ENV === 'production';
+    
+    const isProduction = process.env.IS_PRODUCTION === 'true';
     res
       .status(200)
       .cookie('refresh', refreshToken, {
         httpOnly: true,
-        domain: 'localhost',
-        secure: envi, // Set to true in production           // BISA false di localhost, tapi 'none' butuh secure: true
-        sameSite: 'lax',
-        maxAge: (envi ? 2 : 7) * 24 * 60 * 60 * 1000,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
+        maxAge: (isProduction ? 7 : 15) * 24 * 60 * 60 * 1000,
       })
       .json({
         success: true,
